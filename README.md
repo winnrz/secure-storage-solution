@@ -1,5 +1,5 @@
 # secure-storage-solution
-This project implements a secure file and folder backup system featuring strong encryption, flexible key management, and support for multiple users. It allows users to encrypt and decrypt files using separate cryptographic keys, ensuring confidentiality and integrity of backed-up data. It uses modern cryptographic algorithms, including **Ed25519** for signing and **X25519** for key exchange.
+This project implements a secure file and folder backup system featuring strong encryption, flexible key management, and support for multiple users. It allows users to encrypt and decrypt files using separate cryptographic keys, ensuring confidentiality and integrity of backed-up data. It uses Elliptic Curve Diffie-Hellman (ECDH) and AES for key exchange and encryption respectively
 
 
 ## Features
