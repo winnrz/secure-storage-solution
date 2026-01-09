@@ -2,46 +2,52 @@ import os
 from cryptography.hazmat.primitives.asymmetric import x25519
 from cryptography.hazmat.primitives import serialization
 
-def generate_x25519_keypair(username: str, key_dir="store"):
+def generate_x25519_keypair(username: str, key_dir="store", passphrase: str = None):
     """
-    Generate an X25519 key pair for <username> and save them to disk under /store.
+    Generate an X25519 key pair for <username> and save them securely to disk.
     
-    Files created:
-        store/<username>_x25519_private.key
-        store/<username>_x25519_public.key
+    Args:
+        username: user identifier
+        key_dir: directory to save keys
+        passphrase: optional passphrase to encrypt the private key
     """
 
-    # Ensure directory exists
     os.makedirs(key_dir, exist_ok=True)
 
-    # 1. Generate X25519 private key
+    # Generate keys
     private_key = x25519.X25519PrivateKey.generate()
     public_key = private_key.public_key()
 
-    # 2. Convert to raw bytes using serialization module
+    # Determine encryption
+    if passphrase:
+        encryption = serialization.BestAvailableEncryption(passphrase.encode())
+    else:
+        encryption = serialization.NoEncryption()
+
+    # Serialize private key in PEM format
     private_bytes = private_key.private_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PrivateFormat.Raw,
-        encryption_algorithm=serialization.NoEncryption()
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=encryption
     )
 
+    # Serialize public key in PEM format
     public_bytes = public_key.public_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PublicFormat.Raw
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
 
-    # 3. File paths
+    # File paths
     priv_path = os.path.join(key_dir, f"{username}_x25519_private.key")
     pub_path  = os.path.join(key_dir, f"{username}_x25519_public.key")
 
-    # 4. Save keys
+    # Save keys
     with open(priv_path, "wb") as f:
         f.write(private_bytes)
-
     with open(pub_path, "wb") as f:
         f.write(public_bytes)
 
-    print(f"✔ X25519 private key saved to: {priv_path}")
+    print(f"✔ X25519 private key saved to: {priv_path} (encrypted: {passphrase is not None})")
     print(f"✔ X25519 public key saved to:  {pub_path}")
 
-    return private_key, public_key
+    return public_key
